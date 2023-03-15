@@ -1,48 +1,56 @@
 <!DOCTYPE html>
 <html>
-<head>
-<style>
-  body {
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #F6F4EA;
-  }
 
-  svg {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-</style>
+<head>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #F6F4EA;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
 </head>
+
 <body>
   <svg viewBox="0 0 100 100">
     <image id="external-svg" href="./sleepyEyesLogo.svg" x="10" y="10" width="80" height="80" />
   </svg>
 
   <script>
-
     if (!("ondeviceorientation" in window)) {
       alert("Device orientation is not supported.");
     }
 
     const externalSvg = document.getElementById("external-svg");
 
-    function updatePosition(event) {
-      const gamma = event.gamma; // rotation around the y-axis (-180 to 180)
-      const beta = event.beta; // rotation around the x-axis (-90 to 90)
+    function updatePositionFallback() {
+      const orientation = window.orientation;
+      const gamma = orientation === 90 ? -90 : orientation === -90 ? 90 : 0;
+      const beta = orientation === 0 ? 90 : orientation === 180 ? -90 : 0;
 
-      // Adjust the range for the parallax effect
+      updateSvgPosition(gamma, beta);
+    }
+
+    function updatePosition(event) {
+      updateSvgPosition(event.gamma, event.beta);
+    }
+
+    function updateSvgPosition(gamma, beta) {
       const parallaxFactor = 0.5;
       const x = map(gamma, -180, 180, -50 * parallaxFactor, 50 * parallaxFactor);
       const y = map(beta, -90, 90, -50 * parallaxFactor, 50 * parallaxFactor);
 
-      // Update the externalSvg's position
       externalSvg.setAttribute("x", 10 + x);
       externalSvg.setAttribute("y", 10 + y);
     }
@@ -52,26 +60,31 @@
     }
 
     function requestOrientationPermission() {
-    if (
-      typeof DeviceOrientationEvent !== "undefined" &&
-      typeof DeviceOrientationEvent.requestPermission === "function"
-    ) {
-      DeviceOrientationEvent.requestPermission()
-        .then((permissionState) => {
-          if (permissionState === "granted") {
-            window.addEventListener("deviceorientation", updatePosition);
-          } else {
-            alert("Permission not granted.");
-          }
-        })
-        .catch(console.error);
-    } else {
-      window.addEventListener("deviceorientation", updatePosition);
+      if (
+        typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function"
+      ) {
+        DeviceOrientationEvent.requestPermission()
+          .then((permissionState) => {
+            if (permissionState === "granted") {
+              window.addEventListener("deviceorientation", updatePosition);
+            } else {
+              alert("Permission not granted.");
+            }
+          })
+          .catch(console.error);
+      } else {
+        window.addEventListener("deviceorientation", updatePosition);
+      }
     }
-  }
-
-  document.body.addEventListener("click", requestOrientationPermission);
-
+    
+    if ("ondeviceorientation" in window) {
+      requestOrientationPermission();
+    } else {
+      window.addEventListener("orientationchange", updatePositionFallback);
+      updatePositionFallback();
+    }
   </script>
 </body>
+
 </html>
