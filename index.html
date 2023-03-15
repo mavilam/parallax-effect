@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+</style>
+</head>
+<body>
+  <svg viewBox="0 0 100 100">
+    <circle id="circle" cx="50" cy="50" r="40" fill="blue" />
+  </svg>
+
+  <script>
+    const circle = document.getElementById("circle");
+
+    function updatePosition(event) {
+      const gamma = event.gamma; // rotation around the y-axis (-180 to 180)
+      const beta = event.beta; // rotation around the x-axis (-90 to 90)
+
+      // Adjust the range for the parallax effect
+      const parallaxFactor = 0.5;
+      const x = map(gamma, -180, 180, -50 * parallaxFactor, 50 * parallaxFactor);
+      const y = map(beta, -90, 90, -50 * parallaxFactor, 50 * parallaxFactor);
+
+      // Update the circle's position
+      circle.setAttribute("cx", 50 + x);
+      circle.setAttribute("cy", 50 + y);
+    }
+
+    function map(value, inMin, inMax, outMin, outMax) {
+      return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
+    }
+
+    window.addEventListener("deviceorientation", updatePosition);
+  </script>
+</body>
+</html>
