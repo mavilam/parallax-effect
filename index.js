@@ -31,6 +31,15 @@ function map(value, inMin, inMax, outMin, outMax) {
 if (navigator.userAgent.toLowerCase().indexOf('android') > -1) {
   window.addEventListener("deviceorientation", updatePosition);
 } else {
-  window.addEventListener("devicemotion", updatePositionFallback);
-  updatePositionFallback();
+  DeviceOrientationEvent.requestPermission()
+    .then((permissionState) => {
+      if (permissionState === "granted") {
+        window.addEventListener("devicemotion", updatePositionFallback);
+        updatePositionFallback();
+      } else {
+        alert("Permission not granted.");
+      }
+    })
+    .catch(console.error);
+
 }
