@@ -26,6 +26,11 @@
   </svg>
 
   <script>
+
+    if (!("ondeviceorientation" in window)) {
+      alert("Device orientation is not supported.");
+    }
+
     const externalSvg = document.getElementById("external-svg");
 
     function updatePosition(event) {
@@ -46,7 +51,27 @@
       return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
     }
 
-    window.addEventListener("deviceorientation", updatePosition);
+    function requestOrientationPermission() {
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      DeviceOrientationEvent.requestPermission()
+        .then((permissionState) => {
+          if (permissionState === "granted") {
+            window.addEventListener("deviceorientation", updatePosition);
+          } else {
+            alert("Permission not granted.");
+          }
+        })
+        .catch(console.error);
+    } else {
+      window.addEventListener("deviceorientation", updatePosition);
+    }
+  }
+
+  document.body.addEventListener("click", requestOrientationPermission);
+
   </script>
 </body>
 </html>
